@@ -97,7 +97,16 @@ func Query(params *QueryParam) error {
 }
 
 // Listen listens indefinitely for multicast updates
-func Listen(entries chan<- *ServiceEntry, exit chan struct{}) error {
+func ListenExitChan(entries chan<- *ServiceEntry, exit chan struct{}) error {
+	return Listen(context.Background(), entries, exit)
+}
+
+func ListenContext(ctx context.Context, entries chan<- *ServiceEntry) error {
+	exit := make(chan struct{}, 1)
+	return Listen(ctx, entries, exit)
+}
+
+func Listen(ctx context.Context, entries chan<- *ServiceEntry, exit chan struct{}) error {
 	// Create a new client
 	client, err := newClient()
 	if err != nil {
@@ -119,6 +128,8 @@ func Listen(entries chan<- *ServiceEntry, exit chan struct{}) error {
 
 	for {
 		select {
+		case <-ctx.Done():
+			return nil
 		case <-exit:
 			return nil
 		case <-client.closedCh:
