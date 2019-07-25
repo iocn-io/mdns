@@ -2,15 +2,18 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
+	"strconv"
+	"time"
 
-	"github.com/micro/mdns"
+	"github.com/iocn-io/mdns"
 )
 
 func main() {
-
-	serviceTag := "_foobar._tcp"
+	//serviceTag := "_iocn._tcp"
+	serviceTag := "iocn"
 	if len(os.Args) > 1 {
 		serviceTag = os.Args[1]
 	}
@@ -21,7 +24,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	info := []string{"My awesome service"}
+	rand.Seed(time.Now().Unix())
+	info := []string{serviceTag, strconv.Itoa(rand.Intn(100))}
 	service, err := mdns.NewMDNSService(host, serviceTag, "", "", 8000, nil, info)
 	if err != nil {
 		log.Fatal(err)
